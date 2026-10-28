@@ -1,0 +1,7 @@
+#!/bin/sh
+# Build, then run with EAL args from eal.conf. Extra args go after "--"
+# to the app, e.g.: ./run -- --file itch.bin
+set -e
+cd "$(dirname "$0")"
+ninja -C build
+exec dpdk-run ./build/itch-replay $(sed 's/#.*//' eal.conf) "$@"
