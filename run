@@ -4,4 +4,4 @@
 set -e
 cd "$(dirname "$0")"
 ninja -C build
-exec dpdk-run ./build/itch-replay $(sed 's/#.*//' eal.conf) "$@"
+exec "$HOME/.local/bin/dpdk-run" ./build/itch-replay $(sed 's/#.*//' eal.conf) "$@"

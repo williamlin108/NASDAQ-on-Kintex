@@ -19,6 +19,9 @@
 2. (Optional) `/dev/hugepages/rtemap_0`: a root-owned 2 MB leftover from one early
    `sudo` run without `--in-memory`. Clears on reboot or `sudo rm`.
 
+3. (Optional) Lower hugepages from 4 GB to 1 GB (512 pages) if RAM matters; eal.conf caps at 1 GB.
+4. (Optional) After a reboot, confirm `HugePages_Total: 2048` (persistence via sysctl.d).
+
 ## Not yet verified
 
 - Link up / actual TX/RX (blocked on cable).
