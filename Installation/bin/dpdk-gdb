@@ -1,0 +1,5 @@
+#!/bin/sh
+# gdb with dpdk-run's capabilities, so the debugged DPDK program can open mlx5
+# ports. Used as miDebuggerPath in VS Code launch.json; also works by hand:
+#   dpdk-gdb --args ./build-debug/itch-replay -l 0-1 --in-memory ...
+exec "$HOME/.local/bin/dpdk-run" /usr/bin/gdb "$@"
