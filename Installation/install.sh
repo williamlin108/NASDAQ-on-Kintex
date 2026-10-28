@@ -149,7 +149,6 @@ else
 	run sudo setcap cap_net_raw,cap_net_admin,cap_ipc_lock+p "$BIN/dpdk-caps"
 fi
 case ":$PATH:" in *":$BIN:"*) ;; *) warn "$BIN is not on PATH; log out and back in (Ubuntu's ~/.profile adds it once the folder exists)";; esac
-run mkdir -p "$HOME/dpdk-projects"
 
 # ---------------------------------------------------------------------------
 if [ "$VSCODE" = 1 ]; then

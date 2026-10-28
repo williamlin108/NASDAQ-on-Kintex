@@ -12,7 +12,7 @@ up, so a person or agent can pick up without redoing discovery.
 | [files.md](files.md) | Every file and script created outside a normal checkout, and how to undo each |
 | [status.md](status.md) | What works, what's untested, open items and next steps |
 
-Machine setup is reproducible with the installation kit in `~/dpdk-projects/Installation`
+Machine setup is reproducible with the installation kit in `~/dpdk-projects/Installation` (same repo, `../../Installation`)
 (`install.sh`, `verify.sh`, `new-project.sh`, plus AGENTS.md and PITFALLS.md for agents).
 
 Last updated: 2026-10-27.

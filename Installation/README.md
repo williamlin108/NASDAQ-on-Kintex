@@ -7,7 +7,7 @@ projects behave identically everywhere.
 ## On a new computer
 
 ```
-git clone <this repo> ~/dpdk-projects/Installation   # or copy the folder
+git clone git@github.com:williamlin108/NASDAQ-on-Kintex.git ~/dpdk-projects
 cd ~/dpdk-projects/Installation
 ./install.sh --dry-run     # see what it will do (changes nothing)
 ./install.sh               # do it; asks for your sudo password
@@ -17,8 +17,8 @@ cd ~/dpdk-projects/Installation
 Then make a project:
 
 ```
-./new-project.sh my-project
-code ~/dpdk-projects/my-project
+./new-project.sh my-project            # -> ~/dpdk-projects/projects/my-project
+code ~/dpdk-projects/projects/my-project
 ```
 
 In VS Code: **Ctrl+Shift+B** builds and runs, **F5** debugs. No sudo needed for either.

@@ -1,21 +1,24 @@
 #!/bin/bash
 # Create a new DPDK project from template/, with this machine's mlx5 ports filled in.
 #
-#   ./new-project.sh my-project                # -> ~/dpdk-projects/my-project
+#   ./new-project.sh my-project                # -> <repo>/projects/my-project
 #   ./new-project.sh my-project --dir ~/work   # -> ~/work/my-project
-#   ./new-project.sh my-project --no-git
+#   ./new-project.sh my-project --no-git       # never git init
+#
+# Inside an existing git repo (the default projects/ folder is), the project is just
+# added to that repo; outside one, a new repo is created with an initial commit.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 NAME=""
-DIR="$HOME/dpdk-projects"
+DIR="$(dirname "$HERE")/projects"
 GIT=1
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--dir) DIR="$2"; shift ;;
 	--no-git) GIT=0 ;;
-	-h|--help) sed -n '2,7p' "$0"; exit 0 ;;
+	-h|--help) sed -n '2,10p' "$0"; exit 0 ;;
 	-*) echo "unknown option: $1" >&2; exit 2 ;;
 	*) NAME="$1" ;;
 	esac
@@ -73,7 +76,9 @@ meson setup build >/dev/null
 ln -s build/compile_commands.json .
 ninja -C build >/dev/null
 
-if [ "$GIT" = 1 ]; then
+IN_REPO=0
+git -C "$DEST" rev-parse --is-inside-work-tree >/dev/null 2>&1 && [ "$(git -C "$DEST" rev-parse --show-toplevel)" != "$DEST" ] && IN_REPO=1
+if [ "$GIT" = 1 ] && [ "$IN_REPO" = 0 ]; then
 	git init -q
 	git add -A
 	git commit -q -m "Initial commit from DPDK project template"
@@ -83,3 +88,5 @@ echo "Created $DEST"
 echo "  ports in eal.conf: $(grep -c '^-a ' eal.conf)   NUMA nodes: $NODES (NIC on node $NIC_NODE)"
 echo "  open:  code $DEST    (Ctrl+Shift+B = build & run, F5 = debug)"
 echo "  run:   cd $DEST && ./run"
+[ "$IN_REPO" = 1 ] && echo "  git:   part of $(git rev-parse --show-toplevel); commit when ready (git add $NAME)"
+true

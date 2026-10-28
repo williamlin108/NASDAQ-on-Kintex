@@ -30,7 +30,7 @@
 
 - F5 debugging: verified through VS Code's C++ debug adapter (breakpoints, variables, watch, step, app args).
 - user-guide.md "Making a new project" walkthrough tested end to end on 2026-10-27 (build, run, Ctrl+Shift+B command, F5, adding a source file, rebuild, clangd, testpmd commands, git).
-- Git: `main` tracks `origin` = git@github.com:williamlin108/NASDAQ-on-Kintex.git (SSH). Ignored: `build/`, `build-debug/`, `.cache/`, `.vscode/settings.json` (Meson-extension-generated, machine-specific).
+- Git: this project is `projects/itch-replay/` in the repo git@github.com:williamlin108/NASDAQ-on-Kintex.git (cloned to `~/dpdk-projects`), next to `Installation/`. Ignored: `build/`, `build-debug/`, `.cache/`, `.vscode/settings.json` (Meson-extension-generated, machine-specific).
 - NIC firmware is Dell-branded 14.32.2004; no update attempted.
 
 ## Next development steps

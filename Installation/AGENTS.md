@@ -35,11 +35,16 @@ item in it cost real debugging time.
 3. **Verify.** `./verify.sh --full`. It must end with `All checks passed.`
    `--full` creates a throwaway project, runs it, and runs a headless F5 debug session
    through VS Code's own debug adapter (`tools/test-f5.py`).
-4. **Create projects** with `./new-project.sh <name>` (into `~/dpdk-projects/<name>`).
+4. **Create projects** with `./new-project.sh <name>` (into `projects/<name>` of this
+   repo; it's added to the existing repo, no nested `git init`).
    It detects the machine's mlx5 PCI addresses and NUMA layout for `eal.conf`.
    Don't copy `eal.conf` `-a` lines between machines.
 
 ## Files
+
+Repo layout: `Installation/` (this kit) and `projects/<name>/` side by side; the repo
+is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS Code (its
+`.vscode/` holds the tasks and F5 config), not the repo root.
 
 | Path | Purpose |
 |---|---|

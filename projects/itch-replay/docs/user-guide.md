@@ -9,7 +9,7 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 
 | I want to… | Do this |
 |---|---|
-| Open the project | `code ~/dpdk-projects/itch-replay` |
+| Open the project | `code ~/dpdk-projects/projects/itch-replay` |
 | Build **and** run | **Ctrl+Shift+B** in VS Code, or `./run` in a terminal |
 | Only build | `ninja -C build` (optimized) / `ninja -C build-debug` (for debugging) |
 | Run with arguments for my program | Put them in `eal.conf` after a `--` line (used by ./run **and** F5). One-off extras: `./run --verbose` if `eal.conf` already has a `--` line, otherwise `./run -- --verbose` |
@@ -123,11 +123,12 @@ dpdk-run ./build/itch-replay <args from eal.conf> <your args>
 ## Making a new project
 
 **Easiest:** `~/dpdk-projects/Installation/new-project.sh my-project`. It does all the
-steps below, fills in this machine's card addresses, builds, and makes the first git
-commit. The manual steps are kept here for reference.
+steps below, creates `~/dpdk-projects/projects/my-project`, fills in this machine's card
+addresses, and builds it. The project is part of the main git repo; commit it like any
+other change. The manual steps are kept here for reference.
 
 ```
-cd ~/dpdk-projects
+cd ~/dpdk-projects/projects
 mkdir -p my-project/src my-project/.vscode && cd my-project
 cp ../itch-replay/{meson.build,eal.conf,run,.gitignore} .
 cp ../itch-replay/.vscode/{tasks.json,launch.json} .vscode/
@@ -151,9 +152,8 @@ Then:
    ```
 5. `code .` to open it. Ctrl+Shift+B builds and runs; F5 debugs (it creates
    `build-debug/` the first time by itself).
-6. Git (optional): `git init && git add -A && git commit -m "Initial commit"`. To put
-   it on GitHub: create an **empty** repo on github.com, then
-   `git remote add origin git@github.com:williamlin108/<repo>.git && git push -u origin main`.
+6. Git: the project is inside the main repo, so just
+   `git add . && git commit -m "Add my-project" && git push`. Don't `git init` inside it.
 
 **Adding source files:** list each new `.c`/`.cpp` file in the `executable(...)`
 call in `meson.build`, e.g. `executable('my-project', 'src/main.c', 'src/itch.c', ...)`.

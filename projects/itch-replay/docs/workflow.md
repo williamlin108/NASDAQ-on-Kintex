@@ -2,8 +2,9 @@
 
 ## Layout
 
-All DPDK projects live in `~/dpdk-projects/`, one folder each. Copy this
-project's `meson.build` as the template for a new project.
+The repo `~/dpdk-projects` (github.com/williamlin108/NASDAQ-on-Kintex) has
+`Installation/` and `projects/` side by side; each project is a folder in `projects/`.
+Create new ones with `Installation/new-project.sh <name>`.
 
 ```
 itch-replay/
@@ -68,7 +69,7 @@ Fallback (always works): `sudo ./build/itch-replay -l 0-1 -a 85:00.0 -a 85:00.1`
 
 ## VS Code
 
-- Open with `code ~/dpdk-projects/itch-replay` (VS Code is the classic-confinement
+- Open with `code ~/dpdk-projects/projects/itch-replay` (VS Code is the classic-confinement
   snap, so it can see the whole home folder).
 - **Ctrl+Shift+B** runs task "DPDK: build & run" (`./run`).
 - IntelliSense is **clangd** (cpptools IntelliSense disabled; cpptools kept for

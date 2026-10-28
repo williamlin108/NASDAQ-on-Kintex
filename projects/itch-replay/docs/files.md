@@ -4,8 +4,9 @@ Nothing here is temporary. All of it is still in use.
 
 | Path | What | Undo |
 |---|---|---|
-| `~/dpdk-projects/` | Parent folder for all DPDK projects | — |
-| `~/dpdk-projects/itch-replay/` | This project (meson.build, src/main.c, eal.conf, run, .gitignore, .vscode/tasks.json, .vscode/launch.json, CLAUDE.md, AGENTS.md, docs/) | delete folder |
+| `~/dpdk-projects/` | Git repo (github.com/williamlin108/NASDAQ-on-Kintex): `Installation/` + `projects/` | — |
+| `~/dpdk-projects/Installation/` | Installation kit (install.sh, verify.sh, new-project.sh, template) | — |
+| `~/dpdk-projects/projects/itch-replay/` | This project (meson.build, src/main.c, eal.conf, run, .gitignore, .vscode/tasks.json, .vscode/launch.json, CLAUDE.md, AGENTS.md, docs/) | delete folder |
 | `~/.local/bin/dpdk-run` | Launcher script granting ambient caps (see workflow.md); uses absolute paths so it works without `~/.local/bin` on PATH | `rm` |
 | `~/.local/bin/dpdk-gdb` | gdb wrapped in dpdk-run; VS Code `miDebuggerPath` for F5 | `rm` |
 | `~/.local/bin/dpdk-caps` | capsh copy with file caps `cap_net_admin,cap_net_raw,cap_ipc_lock=p` | `rm` (removes the caps too) |
