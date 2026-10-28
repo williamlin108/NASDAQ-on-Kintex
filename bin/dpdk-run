@@ -1,0 +1,16 @@
+#!/bin/sh
+# Run a DPDK program without sudo: dpdk-caps (a copy of capsh holding these
+# capabilities as file caps) passes them on as ambient caps to the program.
+# One-time setup (Installation/install.sh does this):
+#   sudo install -m 0750 -o "$USER" -g "$USER" /usr/sbin/capsh ~/.local/bin/dpdk-caps
+#   sudo setcap cap_net_raw,cap_net_admin,cap_ipc_lock+p ~/.local/bin/dpdk-caps
+CAPS=cap_net_raw,cap_net_admin,cap_ipc_lock
+CAPSH="$(dirname "$0")/dpdk-caps"
+
+if [ ! -x "$CAPSH" ] || ! /usr/sbin/getcap "$CAPSH" | grep -q cap_net_raw; then
+	echo "dpdk-run: $CAPSH missing or has no caps; see setup in $0" >&2
+	exit 1
+fi
+[ $# -gt 0 ] || { echo "usage: dpdk-run <program> [args...]" >&2; exit 2; }
+
+exec "$CAPSH" --inh="$CAPS" --addamb="$CAPS" -- -c 'exec "$@"' dpdk-run "$@"

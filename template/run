@@ -1,0 +1,10 @@
+#!/bin/sh
+# Build, then run with EAL args from eal.conf. Extra args go after "--"
+# to the app, e.g.: ./run -- --file itch.bin
+set -e
+cd "$(dirname "$0")"
+ninja -C build
+# eal.conf is split into words on purpose; set -f stops '*' etc. expanding to filenames
+set -f
+# shellcheck disable=SC2046
+exec "$HOME/.local/bin/dpdk-run" ./build/__NAME__ $(sed 's/#.*//' eal.conf) "$@"
