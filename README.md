@@ -15,6 +15,7 @@ projects/
 | Read | For |
 |---|---|
 | **[docs/user-guide.html](docs/user-guide.html)** (open in a browser) or [user-guide.md](docs/user-guide.md) | Opening, building, running, debugging, new projects, troubleshooting |
+| [docs/coding-standards.md](docs/coding-standards.md) | Coding rules for all code here (people and agents) |
 | [docs/how-it-works.md](docs/how-it-works.md) | Why it's set up this way: drivers, running without sudo, VS Code/F5 internals |
 | [docs/this-machine.md](docs/this-machine.md) | This computer's hardware, versions, every installed file and how to undo it |
 | [Installation/README.md](Installation/README.md) | Setting up another computer |

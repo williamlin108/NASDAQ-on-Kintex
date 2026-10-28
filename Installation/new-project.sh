@@ -75,7 +75,8 @@ create_from_template() {
 	cp -r "$HERE/template/." "$DEST/"
 	mv "$DEST/gitignore" "$DEST/.gitignore"
 	cd "$DEST"
-	sed -i "s/__NAME__/$NAME/g" meson.build run .vscode/launch.json
+	sed -i "s/__NAME__/$NAME/g" meson.build run .vscode/launch.json AGENTS.md CLAUDE.md docs/README.md
+	sed -i "s/__DATE__/$(date +%F)/" docs/README.md
 	python3 -I - "$PORTS" "$(per_node_list 256)" "$(per_node_list 1024)" <<'EOF'
 import sys
 ports, mem, limit = sys.argv[1:]
@@ -83,8 +84,8 @@ s = open("eal.conf").read()
 s = s.replace("__PORTS__\n", ports).replace("__SOCKET_MEM__", mem).replace("__SOCKET_LIMIT__", limit)
 open("eal.conf", "w").write(s)
 EOF
-	if grep -rqn '__[A-Z_]*__' meson.build run eal.conf .vscode; then
-		grep -rn '__[A-Z_]*__' meson.build run eal.conf .vscode >&2
+	if grep -rqn '__[A-Z_]*__' meson.build run eal.conf .vscode AGENTS.md CLAUDE.md docs; then
+		grep -rn '__[A-Z_]*__' meson.build run eal.conf .vscode AGENTS.md CLAUDE.md docs >&2
 		die 1 "BUG: unreplaced template placeholder (above)"
 	fi
 }

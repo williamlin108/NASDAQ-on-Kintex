@@ -51,7 +51,7 @@ the repo is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS 
 | `install.sh` | Idempotent installer (packages, DPDK, drivers check, hugepages, caps launcher, VS Code) |
 | `verify.sh` | Read-only checks plus a live testpmd probe; `--full` adds the project/run/F5 test |
 | `new-project.sh` | New project from `template/` |
-| `template/` | meson.build, eal.conf, run, .vscode/{tasks,launch}.json, src/main.c, gitignore (`__NAME__`, `__PORTS__`, `__SOCKET_MEM__`, `__SOCKET_LIMIT__` placeholders) |
+| `template/` | meson.build, eal.conf, run, .vscode/{tasks,launch}.json, src/main.c, AGENTS.md/CLAUDE.md, docs/README.md, gitignore (`__NAME__`, `__DATE__`, `__PORTS__`, `__SOCKET_MEM__`, `__SOCKET_LIMIT__` placeholders) |
 | `bin/dpdk-run`, `bin/dpdk-gdb` | Installed to `~/.local/bin` |
 | `tools/build-dpdk-from-source.sh` | Pinned DPDK 25.11 build (SHA-256 checked, mtcr_ul workaround) |
 | `tools/merge-vscode-settings.py` | Adds missing VS Code user settings without touching existing ones |
@@ -71,6 +71,8 @@ Full explanation: [../docs/how-it-works.md](../docs/how-it-works.md). The essent
 
 ## Rules
 
+- All code follows [../docs/coding-standards.md](../docs/coding-standards.md). Read it
+  before writing or changing any script.
 - Never install MLNX_OFED/DOCA, never bind mlx5 ports to vfio-pci/uio, never run DPDK
   apps with sudo as the normal workflow (use `dpdk-run`; sudo leaves `rtemap_*` files).
 - Keep exactly one DPDK installation.

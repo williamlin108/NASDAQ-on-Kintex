@@ -1,5 +1,10 @@
 # Repo guide for agents
 
+> **Required before writing or changing any code:** read
+> [docs/coding-standards.md](docs/coding-standards.md) in full and follow it. It is
+> short. Don't skip it, even for a one-line change. (Claude Code loads it
+> automatically through `CLAUDE.md`.)
+
 ## Documentation map (read this first)
 
 Read only what your task needs, using the "Read when" column. Before writing anything,
@@ -10,6 +15,7 @@ create new .md files or duplicate content between files: link to the owner inste
 |---|---|---|---|
 | `README.md` | Repo front page for humans: layout, doc index, 3-line quick starts | Rarely; this map covers it | The repo layout or a top-level doc changes. Keep it short: links, not content |
 | `AGENTS.md` (this file) + `CLAUDE.md` (imports it) | Agent orientation | Always (auto-loaded) | A doc is added, removed, or changes purpose. Keep this map exact |
+| `docs/coding-standards.md` | Code rules: function size and summaries, `main` shape, comments, errors, per-language rules | **Always, before writing or changing code** (auto-loaded by Claude Code) | Only when the user changes the standards. Keep it short and rule-shaped |
 | `docs/user-guide.md` | **How to use** everything, for the user (all projects) | Answering "how do I…", or before changing any user-visible command, shortcut or behaviour | Anything the user does or sees changes. Second person, task-ordered, copy-pasteable commands, no internals. **Then regenerate the HTML** (see rules) |
 | `docs/user-guide.html` | Generated from user-guide.md for the browser | **Never read or edit** (large, derived) | Never by hand: `python3 -I docs/build-user-guide.py` |
 | `docs/how-it-works.md` | **Why** it works: drivers, capabilities/`dpdk-run`, hugepages, `eal.conf` parsing, VS Code/F5 internals, tests | Debugging the workflow, or before redesigning it | A mechanism changes. Explanatory, timeless (no dates, no "we did X"), no step-by-step how-to |
@@ -48,37 +54,10 @@ Check every row that applies before you finish. Docs that lag behind the code ar
 | `Installation/template/` or a project's `run`, `.vscode/tasks.json`, `.vscode/launch.json` | The same file in the template and in every existing project |
 | A doc's purpose, or added/removed a doc | The documentation map above |
 
-## Code standards
-
-Apply to all code: C/C++ in projects, shell and Python in `Installation/` and `docs/`.
-
-- **Every function gets a one-sentence summary** directly above it (C: `/* ... */`;
-  shell: `# ...`; Python: a docstring) saying *what* it does, not how. A second
-  sentence is fine only for something critical (a pitfall, an ownership rule). If one
-  sentence can't describe it, it does too much: split it.
-- **Small, single-purpose functions.** Aim for under ~40 lines and at most 3 levels of
-  nesting; past that, extract a named helper.
-- **`main` stays high level:** a readable sequence of calls to named steps (parse
-  config, init, run, clean up) with no detailed logic inline. Shell and Python scripts
-  follow the same shape: functions, then `main "$@"` / `main()` at the bottom. Only
-  thin wrappers of a few straight-line commands (`bin/dpdk-run`, a project's `run`)
-  may skip functions; they still need the header.
-- **Reference examples:** `Installation/template/src/main.c` (C) and
-  `Installation/install.sh` (shell) show the expected shape.
-- **Comments inside functions explain *why*** (a constraint, a pitfall: "see pitfall
-  N", a non-obvious choice), never restate the code.
-- **Every file starts with a short header:** what it is for, and usage for scripts.
-- **Check every DPDK return value** (many are `warn_unused_result`); fail with a
-  message naming what failed (`rte_exit` in setup code).
-- **Match the surrounding style:** C uses tabs and DPDK/kernel style like the template;
-  shell is bash with `set -euo pipefail`, shellcheck-clean, absolute paths for tools;
-  Python runs as `python3 -I`, standard library only (plus python3-markdown for docs).
-- **Builds must have zero warnings** (`warning_level=2`).
-
 ## Working rules
 
 - Setup, repair, or changes to `Installation/`: follow `Installation/AGENTS.md`.
 - Run DPDK programs with `./run` or `dpdk-run`, never `sudo`. Open a **project folder** in
   VS Code, not the repo root.
-- Before finishing script changes: `shellcheck -S warning <script>` and
-  `Installation/verify.sh --full` (must end "All checks passed.").
+- Before finishing a code change, run the checks listed in
+  `docs/coding-standards.md` ("Before finishing a change").
