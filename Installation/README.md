@@ -22,6 +22,9 @@ code ~/dpdk-projects/projects/my-project
 ```
 
 In VS Code: **Ctrl+Shift+B** builds and runs, **F5** debugs. No sudo needed for either.
+Open the **project folder** (`projects/my-project`), not the repo root `~/dpdk-projects`:
+the shortcuts live in each project's `.vscode/`, which VS Code only reads from the
+folder you opened.
 
 ## What `install.sh` does
 

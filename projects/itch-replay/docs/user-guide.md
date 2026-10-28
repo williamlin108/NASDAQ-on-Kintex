@@ -9,7 +9,7 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 
 | I want to… | Do this |
 |---|---|
-| Open the project | `code ~/dpdk-projects/projects/itch-replay` |
+| Open the project | `code ~/dpdk-projects/projects/itch-replay` (**the project folder, not `~/dpdk-projects`**, see below) |
 | Build **and** run | **Ctrl+Shift+B** in VS Code, or `./run` in a terminal |
 | Only build | `ninja -C build` (optimized) / `ninja -C build-debug` (for debugging) |
 | Run with arguments for my program | Put them in `eal.conf` after a `--` line (used by ./run **and** F5). One-off extras: `./run --verbose` if `eal.conf` already has a `--` line, otherwise `./run -- --verbose` |
@@ -26,6 +26,17 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 ---
 
 ## VS Code
+
+> **Always open the project folder itself**, e.g. `code ~/dpdk-projects/projects/itch-replay`
+> (or File → Open Folder → `~/dpdk-projects/projects/itch-replay`).
+>
+> Ctrl+Shift+B and F5 are set up in that project's own `.vscode/` folder, and VS Code
+> only reads `.vscode/` from the folder you opened. If you open the repo root
+> `~/dpdk-projects` instead, Ctrl+Shift+B shows "No build task to run found", F5 asks
+> you to pick a debugger, and autocomplete may miss the DPDK headers. Git still works
+> either way: VS Code finds the main repo from inside the project folder.
+>
+> To switch projects, use File → Open Recent, or open several projects in separate windows.
 
 ### Shortcuts
 
@@ -227,6 +238,7 @@ prints a `FAIL` line for anything wrong. `Installation/PITFALLS.md` explains eac
 
 | Symptom | Fix |
 |---|---|
+| Ctrl+Shift+B says "No build task to run found", or F5 asks which debugger to use | You opened `~/dpdk-projects` (or another parent folder). Open the project folder: `code ~/dpdk-projects/projects/itch-replay`. |
 | `dpdk-caps missing or has no caps` | Recreate dpdk-caps (see above). |
 | `Cannot allocate memory` / `No available hugepages` | `grep HugePages /proc/meminfo`. If total is 0, re-apply the sysctl. If free is low, another DPDK program is running, or there are leftover `/dev/hugepages/rtemap_*` files from a sudo run. |
 | `DevX create TIS failed errno=121` | Program was run without permissions. Use `./run` or `dpdk-run`. |
