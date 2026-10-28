@@ -53,5 +53,6 @@ tools (`dpdk-testpmd`, `dpdk-hugepages.py`, `dpdk-devbind.py`) in `/usr/bin`.
 | 2026-10-27 | DPDK 25.11 source build (`build-dpdk-from-source.sh --no-install`) incl. mlx5 driver | Builds (not run on the card: blocked by the agent's permission rules) |
 | 2026-10-28 | After reboot: 2048 hugepages reserved, no leftover `rtemap_*` | Pass |
 | 2026-10-28 | `Installation/verify.sh --full` | All checks passed |
+| 2026-10-28 | Scripts and `main.c` restructured into one-sentence functions + small `main` (code standards in `AGENTS.md`): `install.sh --dry-run` output identical, `verify.sh` same results, `new-project.sh` all modes, F5 test, HTML guide byte-identical | Pass |
 
 Not yet tested: link up and real packet send/receive (no cable between the ports yet).

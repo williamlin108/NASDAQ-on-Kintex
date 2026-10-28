@@ -165,3 +165,4 @@ Each entry: **symptom → cause → fix**. The scripts already handle the ones m
 | `link down` | No cable / peer down |
 | `ninja: no work to do.` | Up to date |
 | clangd `--check`: `tweak: SwapBinaryOperands ==> FAIL` | clangd self-test of a refactoring, not a code error |
+| clangd errors (`'rte_eal.h' file not found`) in `Installation/template/src/main.c` | The template is never built, so it has no `compile_commands.json`. Projects made from it are fine |

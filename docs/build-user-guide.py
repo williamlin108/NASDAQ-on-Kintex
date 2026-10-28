@@ -16,49 +16,77 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "user-guide.md")
 OUT = os.path.join(HERE, "user-guide.html")
 
-md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists", "toc"],
-                       extension_configs={"toc": {"toc_depth": "2-3"}})
-text = open(SRC, encoding="utf-8").read()
-body = md.convert(text)
-
-# A literal | inside a table cell is written \| in markdown; GitHub drops the backslash
-# but python-markdown keeps it inside <code>, so drop it here too.
-body = re.sub(r"<code>(.*?)</code>", lambda m: "<code>" + m.group(1).replace("\\|", "|") + "</code>", body)
-
-# Title = the first h1; drop it from the body (it goes in the header)
-m = re.search(r"<h1[^>]*>(.*?)</h1>\s*", body)
-title = re.sub("<[^>]+>", "", m.group(1)) if m else "User guide"
-body = body[:m.start()] + body[m.end():] if m else body
-
-# Keyboard shortcuts -> <kbd>: bold text or whole table cells that are only a key combo
+# A keyboard shortcut like Ctrl+Shift+B, Alt+←, Ctrl+` or F5
 KEY = r"(?:Ctrl|Shift|Alt)(?:\+(?:Ctrl|Shift|Alt))*\+(?:F\d{1,2}|Space|[A-Z]|\\?`|←|→)|F\d{1,2}"
 
 
+def convert_markdown(text):
+    """Convert the guide's markdown to HTML and return (html, toc tokens)."""
+    md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists", "toc"],
+                           extension_configs={"toc": {"toc_depth": "2-3"}})
+    body = md.convert(text)
+    # A literal | in a table cell is written \| in markdown; GitHub drops the backslash
+    # but python-markdown keeps it inside <code>, so drop it here too.
+    body = re.sub(r"<code>(.*?)</code>", lambda m: "<code>" + m.group(1).replace("\\|", "|") + "</code>", body)
+    return body, md.toc_tokens
+
+
+def take_title(body):
+    """Remove the first <h1> from body and return (title text, remaining body)."""
+    m = re.search(r"<h1[^>]*>(.*?)</h1>\s*", body)
+    if not m:
+        return "User guide", body
+    return re.sub("<[^>]+>", "", m.group(1)), body[:m.start()] + body[m.end():]
+
+
 def kbd(combo):
-    return "<span class=keys>" + "+".join(f"<kbd>{k}</kbd>" for k in combo.replace("\\`", "`").split("+")) + "</span>"
+    """Render a key combo like Ctrl+Shift+B as <kbd> keys."""
+    keys = combo.replace("\\`", "`").split("+")
+    return "<span class=keys>" + "+".join(f"<kbd>{k}</kbd>" for k in keys) + "</span>"
 
 
-body = re.sub(rf"<strong>({KEY})</strong>", lambda m: kbd(m.group(1)), body)
-body = re.sub(rf"<td>({KEY})</td>", lambda m: f"<td>{kbd(m.group(1))}</td>", body)
-body = re.sub(rf"<td><strong>({KEY})</strong></td>", lambda m: f"<td>{kbd(m.group(1))}</td>", body)
+def style_shortcuts(body):
+    """Turn bold text or whole table cells that are only a key combo into <kbd> keys."""
+    body = re.sub(rf"<strong>({KEY})</strong>", lambda m: kbd(m.group(1)), body)
+    body = re.sub(rf"<td>({KEY})</td>", lambda m: f"<td>{kbd(m.group(1))}</td>", body)
+    return re.sub(rf"<td><strong>({KEY})</strong></td>", lambda m: f"<td>{kbd(m.group(1))}</td>", body)
 
-# Wrap each h2 and what follows it in a <section> so search can show/hide whole sections
-parts = re.split(r"(?=<h2[ >])", body)
-intro, sections = parts[0], parts[1:]
-body = f'<div class="intro">{intro}</div>' + "".join(f'<section class="sec">{s}</section>' for s in sections)
 
-# Sidebar from the toc tokens (h2 and their h3s)
-nav = []
-for t in md.toc_tokens:
-    if t["level"] != 2:
-        continue
-    kids = "".join(f'<li><a href="#{c["id"]}">{c["name"]}</a></li>' for c in t["children"] if c["level"] == 3)
-    nav.append(f'<li><a href="#{t["id"]}">{t["name"]}</a>' + (f"<ul>{kids}</ul>" if kids else "") + "</li>")
-nav_html = "<ul>" + "".join(nav) + "</ul>"
+def wrap_sections(body):
+    """Wrap each h2 and its content in a <section> so search can show/hide whole sections."""
+    intro, *sections = re.split(r"(?=<h2[ >])", body)
+    return f'<div class="intro">{intro}</div>' + "".join(f'<section class="sec">{s}</section>' for s in sections)
 
-stamp = datetime.date.fromtimestamp(os.path.getmtime(SRC)).isoformat()
 
-page = """<!doctype html>
+def build_nav(toc_tokens):
+    """Build the sidebar list of h2 sections with their h3 subsections."""
+    items = []
+    for t in toc_tokens:
+        if t["level"] != 2:
+            continue
+        kids = "".join(f'<li><a href="#{c["id"]}">{c["name"]}</a></li>' for c in t["children"] if c["level"] == 3)
+        items.append(f'<li><a href="#{t["id"]}">{t["name"]}</a>' + (f"<ul>{kids}</ul>" if kids else "") + "</li>")
+    return "<ul>" + "".join(items) + "</ul>"
+
+
+def render_page(title, nav, body, stamp):
+    """Fill the page template with the converted guide."""
+    return (PAGE_TEMPLATE.replace("__NAV__", nav).replace("__TITLE__", html.escape(title))
+            .replace("__STAMP__", stamp).replace("__BODY__", body))
+
+
+def main():
+    body, toc = convert_markdown(open(SRC, encoding="utf-8").read())
+    title, body = take_title(body)
+    body = wrap_sections(style_shortcuts(body))
+    stamp = datetime.date.fromtimestamp(os.path.getmtime(SRC)).isoformat()
+    page = render_page(title, build_nav(toc), body, stamp)
+    open(OUT, "w", encoding="utf-8").write(page)
+    print(f"wrote {os.path.relpath(OUT)} ({len(page) // 1024} KB, {len(toc)} top sections)")
+
+
+# Page shell: styles and scripts for the sidebar, search, copy buttons and theme toggle.
+PAGE_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -250,7 +278,6 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 </body>
 </html>
 """
-page = (page.replace("__NAV__", nav_html).replace("__TITLE__", html.escape(title))
-        .replace("__STAMP__", stamp).replace("__BODY__", body))
-open(OUT, "w", encoding="utf-8").write(page)
-print(f"wrote {os.path.relpath(OUT)} ({len(page) // 1024} KB, {len(md.toc_tokens)} top sections)")
+
+if __name__ == "__main__":
+    main()

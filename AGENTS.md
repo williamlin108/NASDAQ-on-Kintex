@@ -35,6 +35,46 @@ create new .md files or duplicate content between files: link to the owner inste
 - **After moving or renaming a doc,** check that all relative links still resolve and
   update this map.
 
+## When you change something, also update
+
+Check every row that applies before you finish. Docs that lag behind the code are bugs.
+
+| You changed / added | Also update |
+|---|---|
+| A script, command, option, shortcut or default the user runs or sees | `docs/user-guide.md` (+ regenerate HTML); `Installation/README.md` if it's part of the kit |
+| A new file in `Installation/` | The Files table in `Installation/AGENTS.md`, and the Files list in `Installation/README.md` |
+| A fix for a problem (new pitfall, or a workaround baked into a script) | `Installation/PITFALLS.md` (mark *(handled)*); the user guide's Troubleshooting or "Messages you can ignore" if the user can see the symptom; `docs/how-it-works.md` if the mechanism changed |
+| Anything installed or written outside the repo | `docs/this-machine.md` (files table with an undo), and `install.sh` / `verify.sh` so other machines get it too |
+| `Installation/template/` or a project's `run`, `.vscode/tasks.json`, `.vscode/launch.json` | The same file in the template and in every existing project |
+| A doc's purpose, or added/removed a doc | The documentation map above |
+
+## Code standards
+
+Apply to all code: C/C++ in projects, shell and Python in `Installation/` and `docs/`.
+
+- **Every function gets a one-sentence summary** directly above it (C: `/* ... */`;
+  shell: `# ...`; Python: a docstring) saying *what* it does, not how. A second
+  sentence is fine only for something critical (a pitfall, an ownership rule). If one
+  sentence can't describe it, it does too much: split it.
+- **Small, single-purpose functions.** Aim for under ~40 lines and at most 3 levels of
+  nesting; past that, extract a named helper.
+- **`main` stays high level:** a readable sequence of calls to named steps (parse
+  config, init, run, clean up) with no detailed logic inline. Shell and Python scripts
+  follow the same shape: functions, then `main "$@"` / `main()` at the bottom. Only
+  thin wrappers of a few straight-line commands (`bin/dpdk-run`, a project's `run`)
+  may skip functions; they still need the header.
+- **Reference examples:** `Installation/template/src/main.c` (C) and
+  `Installation/install.sh` (shell) show the expected shape.
+- **Comments inside functions explain *why*** (a constraint, a pitfall: "see pitfall
+  N", a non-obvious choice), never restate the code.
+- **Every file starts with a short header:** what it is for, and usage for scripts.
+- **Check every DPDK return value** (many are `warn_unused_result`); fail with a
+  message naming what failed (`rte_exit` in setup code).
+- **Match the surrounding style:** C uses tabs and DPDK/kernel style like the template;
+  shell is bash with `set -euo pipefail`, shellcheck-clean, absolute paths for tools;
+  Python runs as `python3 -I`, standard library only (plus python3-markdown for docs).
+- **Builds must have zero warnings** (`warning_level=2`).
+
 ## Working rules
 
 - Setup, repair, or changes to `Installation/`: follow `Installation/AGENTS.md`.
