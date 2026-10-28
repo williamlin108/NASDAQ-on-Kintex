@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPDK User Guide</title>
+<style>
+:root {
+  --bg: #ffffff; --panel: #f6f7f9; --text: #1d2330; --muted: #5d6675; --border: #dde1e7;
+  --accent: #2b62d9; --accent-soft: #e7eefc; --code-bg: #f1f3f6; --note-bg: #fff8e5;
+  --note-border: #e9b949; --kbd-bg: #ffffff; --mark: #ffe58a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171c; --panel: #1b1f26; --text: #e3e7ee; --muted: #9aa3b2; --border: #2c323c;
+    --accent: #7aa7ff; --accent-soft: #1f2b44; --code-bg: #1f242c; --note-bg: #2a2516;
+    --note-border: #a3802c; --kbd-bg: #262c36; --mark: #6b5a12;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171c; --panel: #1b1f26; --text: #e3e7ee; --muted: #9aa3b2; --border: #2c323c;
+  --accent: #7aa7ff; --accent-soft: #1f2b44; --code-bg: #1f242c; --note-bg: #2a2516;
+  --note-border: #a3802c; --kbd-bg: #262c36; --mark: #6b5a12;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Ubuntu, sans-serif; }
+a { color: var(--accent); }
+.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+aside { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--panel);
+  border-right: 1px solid var(--border); padding: 20px 16px; }
+aside .brand { font-weight: 700; font-size: 16px; margin: 0 0 4px; }
+aside .sub { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
+.search { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text); font: inherit; }
+.search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.hint { color: var(--muted); font-size: 12px; margin: 6px 2px 12px; min-height: 18px; }
+nav ul { list-style: none; margin: 0; padding: 0; }
+nav > ul > li { margin: 2px 0; }
+nav a { display: block; padding: 4px 8px; border-radius: 5px; color: var(--text);
+  text-decoration: none; font-size: 14px; }
+nav ul ul a { padding-left: 22px; font-size: 13px; color: var(--muted); }
+nav a:hover { background: var(--accent-soft); }
+nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+nav li.hidden { display: none; }
+.theme { margin-top: 16px; background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+main { padding: 32px 48px 80px; max-width: 980px; }
+header h1 { margin: 0 0 6px; font-size: 30px; }
+header p { margin: 0 0 24px; color: var(--muted); font-size: 13px; }
+h2 { margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); font-size: 22px; }
+h3 { margin: 26px 0 8px; font-size: 17px; }
+.sec.hidden { display: none; }
+.intro p:first-child { font-size: 16px; }
+code { font: 13px/1.5 ui-monospace, "SFMono-Regular", "DejaVu Sans Mono", monospace;
+  background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { position: relative; background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+.copy { position: absolute; top: 6px; right: 6px; font: 12px system-ui, sans-serif;
+  padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); cursor: pointer; opacity: 0; transition: opacity .15s; }
+pre:hover .copy, .copy:focus { opacity: 1; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { margin: 16px 0; padding: 10px 16px; background: var(--note-bg);
+  border-left: 4px solid var(--note-border); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+kbd { display: inline-block; min-width: 22px; padding: 1px 6px; font: 12px/1.6 ui-monospace, monospace;
+  text-align: center; background: var(--kbd-bg); border: 1px solid var(--border);
+  border-bottom-width: 2px; border-radius: 5px; color: var(--text); }
+.keys { white-space: nowrap; }
+mark { background: var(--mark); color: inherit; border-radius: 2px; }
+.empty { display: none; color: var(--muted); padding: 24px 0; }
+.toggle-nav { display: none; }
+@media (max-width: 860px) {
+  .layout { display: block; }
+  aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  aside nav { display: none; }
+  aside.open nav { display: block; }
+  .toggle-nav { display: inline-block; margin-top: 10px; background: none; border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 13px; }
+  main { padding: 20px 16px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside id="aside">
+  <p class="brand">DPDK User Guide</p>
+  <p class="sub">NASDAQ-on-Kintex · ~/dpdk-projects</p>
+  <input class="search" id="q" type="search" placeholder="Search (press /)" aria-label="Search the guide">
+  <div class="hint" id="hint"></div>
+  <button class="toggle-nav" id="toggleNav">Contents</button>
+  <nav id="nav"><ul><li><a href="#start-here">Start here</a></li><li><a href="#quick-reference">Quick reference</a></li><li><a href="#building-and-running">Building and running</a><ul><li><a href="#ealconf">eal.conf</a></li><li><a href="#dpdk-run">dpdk-run</a></li></ul></li><li><a href="#debugging-f5">Debugging (F5)</a></li><li><a href="#vs-code">VS Code</a><ul><li><a href="#shortcuts">Shortcuts</a></li><li><a href="#how-its-configured">How it's configured</a></li></ul></li><li><a href="#making-a-new-project">Making a new project</a></li><li><a href="#useful-dpdk-tools">Useful DPDK tools</a></li><li><a href="#whats-different-from-a-default-linux-install">What's different from a default Linux install</a><ul><li><a href="#4-gb-of-ram-is-reserved-for-hugepages">4 GB of RAM is reserved for hugepages</a></li><li><a href="#dpdk-run-grants-network-permissions-without-sudo">dpdk-run grants network permissions without sudo</a></li><li><a href="#running-with-sudo-leaves-files-behind">Running with sudo leaves files behind</a></li><li><a href="#the-connectx-ports-are-shared-between-linux-and-dpdk">The ConnectX ports are shared between Linux and DPDK</a></li><li><a href="#passwordless-sudo-for-package-installs">Passwordless sudo for package installs</a></li></ul></li><li><a href="#messages-you-can-ignore">Messages you can ignore</a></li><li><a href="#troubleshooting">Troubleshooting</a></li></ul></nav>
+  <button class="theme" id="theme">Toggle dark mode</button>
+</aside>
+<main>
+  <header><h1>DPDK user guide</h1>
+  <p>Generated from <code>docs/user-guide.md</code> (2026-10-28). Edit that file, then run
+  <code>python3 -I docs/build-user-guide.py</code>.</p></header>
+  <div class="intro"><p>How to work on the DPDK projects in this repo: opening, building, running, debugging,
+making new projects, and what's different about this machine. Applies to every project
+in <code>projects/</code>; examples use <code>itch-replay</code>.</p>
+<p>Technical background (why things are set up this way) is in
+<a href="how-it-works.md">how-it-works.md</a>. This machine's hardware, versions and installed
+files are in <a href="this-machine.md">this-machine.md</a>. To set up another computer, see
+<a href="../Installation/README.md">Installation/README.md</a>.</p>
+</div><section class="sec"><h2 id="start-here">Start here</h2>
+<ol>
+<li><strong>Open the project folder</strong> in VS Code, not the repo root:
+   <code>code ~/dpdk-projects/projects/itch-replay</code></li>
+<li><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></span> builds and runs. <span class=keys><kbd>F5</kbd></span> debugs. No <code>sudo</code> needed.</li>
+<li>Settings for a run (CPU cores, memory, network ports, program arguments) are in
+   the project's <code>eal.conf</code>.</li>
+</ol>
+<blockquote>
+<p><strong>Why the project folder?</strong> Ctrl+Shift+B and F5 are defined in each project's own
+<code>.vscode/</code> folder, and VS Code only reads <code>.vscode/</code> from the folder you opened. If
+you open <code>~/dpdk-projects</code> instead, Ctrl+Shift+B says "No build task to run found",
+F5 asks you to pick a debugger, and autocomplete may miss the DPDK headers. Git works
+either way. To switch projects use File → Open Recent, or one window per project.</p>
+</blockquote>
+</section><section class="sec"><h2 id="quick-reference">Quick reference</h2>
+<p>Terminal commands run inside the project folder (<code>cd ~/dpdk-projects/projects/&lt;project&gt;</code>).</p>
+<table>
+<thead>
+<tr>
+<th>I want to…</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build and run</td>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></span>, or <code>./run</code></td>
+</tr>
+<tr>
+<td>Debug</td>
+<td><span class=keys><kbd>F5</kbd></span> (set breakpoints first by clicking left of a line number)</td>
+</tr>
+<tr>
+<td>Only build</td>
+<td><code>ninja -C build</code> (optimized) or <code>ninja -C build-debug</code> (debug build)</td>
+</tr>
+<tr>
+<td>Pass arguments to my program</td>
+<td>Add them to <code>eal.conf</code> after a <code>--</code> line (used by <code>./run</code> and F5)</td>
+</tr>
+<tr>
+<td>One-off extra arguments</td>
+<td><code>./run --verbose</code> if <code>eal.conf</code> has a <code>--</code> line, otherwise <code>./run -- --verbose</code></td>
+</tr>
+<tr>
+<td>Change cores / memory / ports</td>
+<td>Edit <code>eal.conf</code> and run again (no rebuild needed)</td>
+</tr>
+<tr>
+<td>Stop a running program</td>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>C</kbd></span> in its terminal</td>
+</tr>
+<tr>
+<td>After editing <code>meson.build</code></td>
+<td>Nothing; the next build picks it up. If confused: <code>meson setup --reconfigure build</code></td>
+</tr>
+<tr>
+<td>Rebuild from scratch</td>
+<td><code>rm -rf build build-debug &amp;&amp; meson setup build &amp;&amp; ninja -C build</code></td>
+</tr>
+<tr>
+<td>New project</td>
+<td><code>~/dpdk-projects/Installation/new-project.sh &lt;name&gt;</code></td>
+</tr>
+<tr>
+<td>Commit and push</td>
+<td>Ctrl+Shift+G in VS Code, or <code>git add -A &amp;&amp; git commit -m "msg" &amp;&amp; git push</code></td>
+</tr>
+<tr>
+<td>Check the whole setup</td>
+<td><code>~/dpdk-projects/Installation/verify.sh</code></td>
+</tr>
+<tr>
+<td>Check the cards are visible</td>
+<td><code>ibv_devices</code> (lists two devices, here <code>rocep133s0f0</code> and <code>rocep133s0f1</code>)</td>
+</tr>
+<tr>
+<td>Check cable/link</td>
+<td><code>ip -br link | grep enp133</code> (<code>UP</code> = link, <code>NO-CARRIER</code> = no cable/peer)</td>
+</tr>
+<tr>
+<td>Check hugepages</td>
+<td><code>grep HugePages /proc/meminfo</code></td>
+</tr>
+</tbody>
+</table>
+</section><section class="sec"><h2 id="building-and-running">Building and running</h2>
+<pre><code>./run          →  ninja -C build, then
+                  dpdk-run ./build/&lt;project&gt; &lt;arguments from eal.conf&gt; &lt;your extra arguments&gt;
+</code></pre>
+<ul>
+<li><code>./run</code> always rebuilds first, so you never run stale code.</li>
+<li><code>ninja: no work to do.</code> just means nothing changed since the last build.</li>
+<li><strong>Adding source files:</strong> list each new <code>.c</code>/<code>.cpp</code> file in <code>executable(...)</code> in
+  <code>meson.build</code>, e.g. <code>executable('itch-replay', 'src/main.c', 'src/itch.c', ...)</code>.
+  The next build notices the change by itself.</li>
+<li><strong>Measure speed with <code>./run</code></strong>, which uses the optimized <code>build/</code>. <code>build-debug/</code>
+  (used by F5) is unoptimized and much slower.</li>
+</ul>
+<h3 id="ealconf">eal.conf</h3>
+<p>DPDK's startup settings for the project, one or more per line, <code>#</code> starts a comment.</p>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-l 0-1</code></td>
+<td>CPU cores to use (core 0 = main, core 1 = worker)</td>
+</tr>
+<tr>
+<td><code>--socket-mem=256</code></td>
+<td>MB of hugepage memory taken at startup</td>
+</tr>
+<tr>
+<td><code>--socket-limit=1024</code></td>
+<td>Maximum MB it may grow to</td>
+</tr>
+<tr>
+<td><code>--in-memory</code></td>
+<td><strong>Keep this.</strong> It's what lets it run without sudo and leave no files behind</td>
+</tr>
+<tr>
+<td><code>-a 85:00.0</code>, <code>-a 85:00.1</code></td>
+<td>The two ConnectX ports (Ethernet 1 and 2). Remove a line to use one port</td>
+</tr>
+<tr>
+<td><code>--</code> then more lines</td>
+<td>Optional: arguments for <strong>your program</strong> (both <code>./run</code> and F5 use them)</td>
+</tr>
+</tbody>
+</table>
+<p>The memory values must fit in the machine's hugepage pool (4 GB, see
+<a href="#4-gb-of-ram-is-reserved-for-hugepages">below</a>).</p>
+<h3 id="dpdk-run">dpdk-run</h3>
+<p><code>dpdk-run</code> (in <code>~/.local/bin</code>) starts any program with just enough network
+permissions for DPDK, so <strong>you never need <code>sudo</code> to run DPDK programs</strong>. <code>./run</code> and
+F5 use it for you. To use it directly:</p>
+<pre><code>dpdk-run ./build/itch-replay -l 0-1 --in-memory -a 85:00.0 -a 85:00.1
+dpdk-run dpdk-testpmd -l 0-1 --in-memory -a 85:00.1 -- -i
+</code></pre>
+</section><section class="sec"><h2 id="debugging-f5">Debugging (F5)</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Click left of a line number</td>
+<td>Toggle a breakpoint (red dot)</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>F5</kbd></span></td>
+<td>Start debugging / continue to the next breakpoint</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>F10</kbd></span></td>
+<td>Step over (run the current line)</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>F11</kbd></span></td>
+<td>Step into the function on this line</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Shift</kbd>+<kbd>F11</kbd></span></td>
+<td>Step out of the current function</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Shift</kbd>+<kbd>F5</kbd></span></td>
+<td>Stop debugging</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F5</kbd></span></td>
+<td>Restart</td>
+</tr>
+</tbody>
+</table>
+<p>While paused, the left panel shows <strong>Variables</strong> (expand structs and pointers),
+<strong>Watch</strong> (type any expression, e.g. <code>mbuf-&gt;pkt_len</code>) and <strong>Call Stack</strong>. In the
+<strong>Debug Console</strong> you can type expressions, or gdb commands prefixed with <code>-exec</code>,
+e.g. <code>-exec x/64xb rte_pktmbuf_mtod(m, char *)</code> to dump packet bytes.</p>
+<p>What F5 does:</p>
+<ol>
+<li>Runs the task "DPDK: build debug": builds an unoptimized copy in <code>build-debug/</code>
+   (so variables aren't <code>&lt;optimized out&gt;</code> and stepping follows the source) and turns
+   <code>eal.conf</code> into <code>build-debug/args.gdb</code>.</li>
+<li>Starts gdb through <code>dpdk-gdb</code> (gdb wrapped in <code>dpdk-run</code>), so the program gets the
+   same network permissions as <code>./run</code>.</li>
+</ol>
+<p>Tips:</p>
+<ul>
+<li>A breakpoint in the packet send/receive loop pauses the whole program, so the card
+  stops sending. Fine for checking packet contents, useless for measuring speed.</li>
+<li>If F5 fails before the program starts, run the task by hand to see the error:
+  Ctrl+Shift+P → "Tasks: Run Task" → "DPDK: build debug".</li>
+<li>Don't add <code>"args"</code> to <code>launch.json</code>. It replaces the arguments from <code>eal.conf</code>.</li>
+<li>Command-line equivalent: <code>dpdk-gdb -x build-debug/args.gdb build-debug/itch-replay</code>.</li>
+</ul>
+</section><section class="sec"><h2 id="vs-code">VS Code</h2>
+<h3 id="shortcuts">Shortcuts</h3>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></span></td>
+<td>Build and run this project (<code>./run</code>)</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>F5</kbd></span></td>
+<td>Build the debug version and start it in the debugger</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></span></td>
+<td>Command palette (any command: "Meson: Build", "Reload Window", …)</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>`</kbd></span></td>
+<td>Open/close the built-in terminal</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Space</kbd></span></td>
+<td>Show autocomplete suggestions</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>F12</kbd></span></td>
+<td>Go to definition (works on DPDK functions like <code>rte_eth_tx_burst</code> too)</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Alt</kbd>+<kbd>←</kbd></span></td>
+<td>Go back after F12</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Shift</kbd>+<kbd>F12</kbd></span></td>
+<td>Find all references</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></span></td>
+<td>Jump to a function in the current file</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>P</kbd></span></td>
+<td>Open a file by name</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></span></td>
+<td>Git / Source Control panel</td>
+</tr>
+<tr>
+<td><span class=keys><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd></span></td>
+<td>Problems panel (compiler errors and warnings, clickable)</td>
+</tr>
+</tbody>
+</table>
+<p>Hovering over any <code>rte_*</code> function shows its documentation and signature.</p>
+<h3 id="how-its-configured">How it's configured</h3>
+<ul>
+<li><strong>Autocomplete and error squiggles come from clangd</strong>, not Microsoft's C++
+  extension (that one is installed only for its debugger). clangd finds the DPDK
+  headers through <code>compile_commands.json</code>, which meson writes. If autocomplete stops
+  working after adding files, build once (Ctrl+Shift+B), then Ctrl+Shift+P →
+  "clangd: Restart language server".</li>
+<li><strong>The Meson extension</strong> uses the same <code>build/</code> folder as the terminal. It may create
+  <code>.vscode/settings.json</code> in a project; that's expected and git-ignored.</li>
+</ul>
+</section><section class="sec"><h2 id="making-a-new-project">Making a new project</h2>
+<pre><code>~/dpdk-projects/Installation/new-project.sh my-project
+code ~/dpdk-projects/projects/my-project
+</code></pre>
+<p>The script copies the project template into <code>projects/my-project</code>, fills in this
+machine's card addresses and memory layout in <code>eal.conf</code>, names the program
+<code>my-project</code>, and builds it. Ctrl+Shift+B and F5 work straight away.</p>
+<p>The project is part of the main repo. Commit it like any other change
+(<code>git add . &amp;&amp; git commit -m "Add my-project" &amp;&amp; git push</code>), and don't <code>git init</code>
+inside it.</p>
+</section><section class="sec"><h2 id="useful-dpdk-tools">Useful DPDK tools</h2>
+<p>These need <code>dpdk-run</code> in front. 0 packets is normal until a cable is connected.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dpdk-run dpdk-testpmd -l 0-1 --in-memory -a 85:00.1 -- -i</code></td>
+<td>Interactive: <code>start</code>, then <code>show port stats all</code> to see packets arriving; <code>quit</code> to exit</td>
+</tr>
+<tr>
+<td><code>dpdk-run dpdk-testpmd -l 0-1 --in-memory -a 85:00.1 -- --forward-mode=rxonly --stats-period 1</code></td>
+<td>Print receive stats every second (Ctrl+C to stop)</td>
+</tr>
+</tbody>
+</table>
+</section><section class="sec"><h2 id="whats-different-from-a-default-linux-install">What's different from a default Linux install</h2>
+<p>These were changed during setup. If something odd happens, check here first.</p>
+<h3 id="4-gb-of-ram-is-reserved-for-hugepages">4 GB of RAM is reserved for hugepages</h3>
+<ul>
+<li><strong>What:</strong> <code>/etc/sysctl.d/80-hugepages.conf</code> reserves 2048 × 2 MB pages at every boot.</li>
+<li><strong>What you'll notice:</strong> <code>free -h</code> and System Monitor show about 4 GB less available
+  memory, even when no DPDK program is running. There's no CPU cost.</li>
+<li><strong>Change it</strong> (512 = 1 GB, 0 = none), no reboot needed:
+  <code>echo 'vm.nr_hugepages = 512' | sudo tee /etc/sysctl.d/80-hugepages.conf &amp;&amp; sudo sysctl -p /etc/sysctl.d/80-hugepages.conf</code>
+  Keep it at least as large as <code>--socket-limit</code> in your projects' <code>eal.conf</code>.</li>
+<li><strong>Undo:</strong> <code>sudo rm /etc/sysctl.d/80-hugepages.conf &amp;&amp; sudo sysctl vm.nr_hugepages=0</code></li>
+</ul>
+<h3 id="dpdk-run-grants-network-permissions-without-sudo">dpdk-run grants network permissions without sudo</h3>
+<ul>
+<li><strong>What:</strong> <code>~/.local/bin/dpdk-caps</code> is a copy of the system <code>capsh</code> tool with the
+  <code>cap_net_raw</code>, <code>cap_net_admin</code> and <code>cap_ipc_lock</code> capabilities attached. <code>dpdk-run</code>
+  and <code>dpdk-gdb</code> use it.</li>
+<li><strong>Security trade-off:</strong> anything you start through <code>dpdk-run</code> can capture and send
+  raw packets and change network settings. Don't run untrusted programs through it.</li>
+<li><strong>If it stops working</strong> (<code>dpdk-caps missing or has no caps</code>): copying or replacing the
+  file strips its capabilities. Re-run <code>~/dpdk-projects/Installation/install.sh</code>, or:
+  <code>sudo install -m 0750 -o wl -g wl /usr/sbin/capsh ~/.local/bin/dpdk-caps
+  sudo setcap cap_net_raw,cap_net_admin,cap_ipc_lock+p ~/.local/bin/dpdk-caps</code></li>
+<li><strong>Undo:</strong> <code>rm ~/.local/bin/dpdk-caps ~/.local/bin/dpdk-run ~/.local/bin/dpdk-gdb</code></li>
+</ul>
+<h3 id="running-with-sudo-leaves-files-behind">Running with sudo leaves files behind</h3>
+<ul>
+<li><code>sudo ./build/itch-replay ...</code> <strong>without</strong> <code>--in-memory</code> creates root-owned files in
+  <code>/dev/hugepages/</code> (e.g. <code>rtemap_0</code>) that keep memory reserved until a reboot or
+  <code>sudo rm /dev/hugepages/rtemap_*</code>. Use <code>./run</code> or <code>dpdk-run</code> instead.</li>
+</ul>
+<h3 id="the-connectx-ports-are-shared-between-linux-and-dpdk">The ConnectX ports are shared between Linux and DPDK</h3>
+<ul>
+<li>The ports were <strong>not</strong> bound to <code>vfio-pci</code>, which many DPDK guides tell you to do.
+  mlx5 doesn't need it, so <strong>don't run <code>dpdk-devbind.py</code></strong> on them. They stay visible
+  as normal network interfaces (<code>enp133s0f0np0</code>, <code>enp133s0f1np1</code>).</li>
+<li><strong>While a DPDK program runs on a port, it takes that port's traffic</strong>, so <code>ping</code> or
+  <code>tcpdump</code> on that interface won't see packets.</li>
+<li><strong>Once a cable is connected,</strong> NetworkManager will try to get an IP address on those
+  ports and may show a "Wired connection" that never finishes connecting. It's
+  harmless. To stop it (lasts until reboot):
+  <code>sudo nmcli device set enp133s0f0np0 managed no &amp;&amp; sudo nmcli device set enp133s0f1np1 managed no</code></li>
+</ul>
+<h3 id="passwordless-sudo-for-package-installs">Passwordless sudo for package installs</h3>
+<ul>
+<li><code>/etc/sudoers.d/claude-apt</code> lets <code>sudo apt-get update</code> and <code>sudo apt-get install …</code>
+  run <strong>without a password</strong>, so Claude can install packages. Everything else still
+  asks for your password. Remove with <code>sudo rm /etc/sudoers.d/claude-apt</code>.</li>
+</ul>
+</section><section class="sec"><h2 id="messages-you-can-ignore">Messages you can ignore</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EAL: No free 1048576 kB hugepages reported on node 0</code></td>
+<td>No 1 GB pages configured; only 2 MB pages are used</td>
+</tr>
+<tr>
+<td><code>mlx5_net: No available register for sampler.</code></td>
+<td>The ConnectX-4 Lx lacks an optional feature (packet sampling)</td>
+</tr>
+<tr>
+<td><code>link down</code></td>
+<td>No cable connected, or the other end isn't up</td>
+</tr>
+<tr>
+<td><code>ninja: no work to do.</code></td>
+<td>Nothing changed since the last build</td>
+</tr>
+</tbody>
+</table>
+</section><section class="sec"><h2 id="troubleshooting">Troubleshooting</h2>
+<p>First run <code>~/dpdk-projects/Installation/verify.sh</code>. It checks the whole setup and
+prints a <code>FAIL</code> line for anything wrong. Every known problem is explained in
+<a href="../Installation/PITFALLS.md">Installation/PITFALLS.md</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ctrl+Shift+B says "No build task to run found", or F5 asks which debugger to use</td>
+<td>You opened <code>~/dpdk-projects</code> or another parent folder. Open the project folder: <code>code ~/dpdk-projects/projects/&lt;project&gt;</code></td>
+</tr>
+<tr>
+<td><code>dpdk-caps missing or has no caps</code></td>
+<td>Re-run <code>Installation/install.sh</code> (see <a href="#dpdk-run-grants-network-permissions-without-sudo">dpdk-run</a>)</td>
+</tr>
+<tr>
+<td><code>DevX create TIS failed errno=121</code></td>
+<td>The program ran without permissions. Use <code>./run</code> or <code>dpdk-run</code></td>
+</tr>
+<tr>
+<td><code>Requested device 0000:85:00.x cannot be used</code></td>
+<td>Same as above, or another DPDK program is using the card</td>
+</tr>
+<tr>
+<td><code>Cannot allocate memory</code> / <code>No available hugepages</code></td>
+<td><code>grep HugePages /proc/meminfo</code>. Total 0: re-apply the sysctl. Free low: another DPDK program is running, or leftover <code>/dev/hugepages/rtemap_*</code> files</td>
+</tr>
+<tr>
+<td><code>Dependency "libdpdk" not found</code></td>
+<td>DPDK isn't installed: run <code>Installation/install.sh</code></td>
+</tr>
+<tr>
+<td>Autocomplete or red squiggles wrong</td>
+<td>Build once, then Ctrl+Shift+P → "clangd: Restart language server"</td>
+</tr>
+<tr>
+<td>Build errors after moving or renaming the project folder</td>
+<td><code>rm -rf build build-debug &amp;&amp; meson setup build</code> (F5 recreates <code>build-debug</code>)</td>
+</tr>
+<tr>
+<td>F5: ports can't be used</td>
+<td><code>launch.json</code> must use <code>dpdk-gdb</code> (<code>miDebuggerPath</code>), and <code>verify.sh</code> must show dpdk-caps OK</td>
+</tr>
+<tr>
+<td>F5: my program gets no arguments</td>
+<td>Check <code>build-debug/args.gdb</code> contains <code>set args ...</code>; run the task "DPDK: build debug". No <code>"args"</code> in <code>launch.json</code></td>
+</tr>
+<tr>
+<td>F5: variables show <code>&lt;optimized out&gt;</code></td>
+<td><code>launch.json</code> <code>program</code> must point at <code>build-debug/</code>, not <code>build/</code></td>
+</tr>
+</tbody>
+</table></section>
+  <p class="empty" id="empty">No sections match your search.</p>
+</main>
+</div>
+<script>
+(function () {
+  var q = document.getElementById("q"), hint = document.getElementById("hint");
+  var secs = Array.prototype.slice.call(document.querySelectorAll(".sec"));
+  var intro = document.querySelector(".intro");
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav a"));
+
+  // Copy buttons on code blocks
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var b = document.createElement("button");
+    b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+    b.addEventListener("click", function () {
+      var t = pre.querySelector("code").innerText.replace(/\n$/, "");
+      var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1200); };
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { b.textContent = "Select & copy"; });
+    });
+    pre.appendChild(b);
+  });
+
+  // Search: show only sections containing every word; highlight matches
+  function clearMarks(root) {
+    root.querySelectorAll("mark").forEach(function (m) { m.replaceWith(document.createTextNode(m.textContent)); });
+    root.normalize();
+  }
+  function markWords(root, words) {
+    var re = new RegExp("(" + words.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")", "gi");
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), nodes = [], n;
+    while ((n = walker.nextNode())) if (n.parentNode.nodeName !== "BUTTON" && re.test(n.nodeValue)) nodes.push(n);
+    nodes.forEach(function (node) {
+      var span = document.createElement("span");
+      span.innerHTML = node.nodeValue.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(re, "<mark>$1</mark>");
+      node.replaceWith.apply(node, Array.prototype.slice.call(span.childNodes));
+    });
+  }
+  function search() {
+    var words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean), shown = 0;
+    secs.concat([intro]).forEach(clearMarks);
+    secs.forEach(function (s) {
+      var hit = words.every(function (w) { return s.textContent.toLowerCase().indexOf(w) >= 0; });
+      s.classList.toggle("hidden", !hit);
+      if (hit) { shown++; if (words.length) markWords(s, words); }
+      var id = s.querySelector("h2").id, link = document.querySelector('nav a[href="#' + id + '"]');
+      if (link) link.parentNode.classList.toggle("hidden", !hit);
+    });
+    intro.style.display = words.length ? "none" : "";
+    document.getElementById("empty").style.display = shown ? "none" : "block";
+    hint.textContent = words.length ? shown + " of " + secs.length + " sections match · Esc to clear" : "";
+  }
+  q.addEventListener("input", search);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && document.activeElement !== q) { e.preventDefault(); q.focus(); q.select(); }
+    else if (e.key === "Escape" && document.activeElement === q) { q.value = ""; search(); q.blur(); }
+  });
+
+  // Highlight the section currently on screen
+  var heads = Array.prototype.slice.call(document.querySelectorAll("main h2[id], main h3[id]"));
+  function spy() {
+    var cur = null;
+    heads.forEach(function (h) { if (h.getBoundingClientRect().top < 120 && h.offsetParent) cur = h.id; });
+    links.forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + cur); });
+  }
+  document.addEventListener("scroll", spy, { passive: true }); spy();
+
+  // Contents toggle on narrow screens
+  document.getElementById("toggleNav").addEventListener("click", function () {
+    document.getElementById("aside").classList.toggle("open");
+  });
+  links.forEach(function (a) { a.addEventListener("click", function () {
+    document.getElementById("aside").classList.remove("open");
+  }); });
+
+  // Theme toggle (remembered per browser when storage is available)
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem("dpdk-guide-theme"); if (saved) root.dataset.theme = saved; } catch (e) {}
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("dpdk-guide-theme", root.dataset.theme); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

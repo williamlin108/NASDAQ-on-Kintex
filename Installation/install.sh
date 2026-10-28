@@ -66,6 +66,7 @@ PKGS=(
 	rdma-core ibverbs-providers libibverbs-dev ibverbs-utils infiniband-diags
 	meson ninja-build pkg-config python3-pyelftools libnuma-dev libpcap-dev
 	build-essential gdb git curl xz-utils pciutils ethtool libcap2-bin mstflint clangd
+	shellcheck python3-markdown
 )
 # apt-get update and install run as separate sudo commands on purpose: some sudoers
 # rules only allow each one on its own.

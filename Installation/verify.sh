@@ -43,7 +43,12 @@ else
 		drv="$(basename "$(readlink -f /sys/bus/pci/devices/$pci/driver 2>/dev/null)" 2>/dev/null)"
 		[ "$drv" = mlx5_core ] && pass "$pci bound to mlx5_core" || fail "$pci bound to '${drv:-nothing}' (must be mlx5_core, never vfio-pci)"
 	done
-	ibv_devices 2>/dev/null | grep -q mlx5_ && pass "verbs devices: $(ibv_devices | awk '/mlx5_/{printf "%s ", $1}')" || fail "ibv_devices lists no mlx5 devices (mlx5_ib/ib_uverbs not loaded?)"
+	# Verbs device names vary (mlx5_0 at first, rocep133s0f0 once rdma-core's udev
+	# renaming rule runs at boot), so map from the PCI address instead of the name.
+	for pci in $MLX_PCI; do
+		ib="$(ls "/sys/bus/pci/devices/$pci/infiniband" 2>/dev/null | head -1)"
+		[ -n "$ib" ] && pass "$pci verbs device: $ib" || fail "$pci has no verbs device (mlx5_ib/ib_uverbs not loaded?)"
+	done
 	for f in /dev/infiniband/uverbs*; do
 		[ -r "$f" ] && [ -w "$f" ] && pass "$f read/writable" || fail "$f not read/writable by $USER"
 	done

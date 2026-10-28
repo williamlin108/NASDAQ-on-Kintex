@@ -5,7 +5,7 @@ ConnectX NICs, matching a known-good reference machine. Everything below was ver
 on that machine. **Read [PITFALLS.md](PITFALLS.md) before changing anything**: every
 item in it cost real debugging time.
 
-## Target state (reference machine, verified 2026-10-27)
+## Target state (reference machine, verified 2026-10-28)
 
 | Component | Reference |
 |---|---|
@@ -42,9 +42,9 @@ item in it cost real debugging time.
 
 ## Files
 
-Repo layout: `Installation/` (this kit) and `projects/<name>/` side by side; the repo
-is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS Code (its
-`.vscode/` holds the tasks and F5 config), not the repo root.
+Repo layout: `docs/`, `Installation/` (this kit) and `projects/<name>/` side by side;
+the repo is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS Code
+(its `.vscode/` holds the tasks and F5 config), not the repo root.
 
 | Path | Purpose |
 |---|---|
@@ -60,12 +60,12 @@ is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS Code (its
 
 ## How the run/debug workflow works (don't redesign it without reason)
 
-- `eal.conf` (per project) holds EAL args, one or more per line, `#` comments, with
-  optional program args after a `--` line. `./run` = `ninja -C build` + `dpdk-run
-  ./build/<name> $(eal.conf)`. Ctrl+Shift+B runs `./run`.
-- F5: preLaunchTask "DPDK: build debug" builds `build-debug/` and writes
-  `build-debug/args.gdb`; launch.json loads it in `setupCommands` and uses
-  `miDebuggerPath: ~/.local/bin/dpdk-gdb`. No `"args"` in launch.json (pitfall 16).
+Full explanation: [../docs/how-it-works.md](../docs/how-it-works.md). The essentials:
+
+- `./run` = `ninja -C build` + `dpdk-run ./build/<name> <eal.conf words> "$@"`;
+  Ctrl+Shift+B runs `./run`.
+- F5 builds `build-debug/`, turns eal.conf into `build-debug/args.gdb`, and runs gdb
+  via `dpdk-gdb`. No `"args"` in launch.json (pitfall 17).
 - Ambient capabilities are the key trick: they survive exec into a non-setuid binary
   and are inherited under ptrace, so both rebuilt binaries and gdb's child get them.
 
@@ -78,6 +78,11 @@ is normally cloned to `~/dpdk-projects`. Open a *project* folder in VS Code (its
 - Keep absolute paths in scripts (`/usr/sbin/getcap`, `$HOME/.local/bin/dpdk-run`,
   `/usr/bin/gdb`). PATH differs between login shells, VS Code tasks, and agents.
 - If you change a script, re-run `shellcheck -S warning` on it and `./verify.sh --full`.
+- `template/` and existing projects share `run`, `.vscode/tasks.json` and
+  `.vscode/launch.json` (with the name filled in). A fix in one belongs in the others.
+- If you change how something is used, update `../docs/user-guide.md`, then regenerate
+  the HTML with `python3 -I ../docs/build-user-guide.py` and commit both. Internals go in
+  `../docs/how-it-works.md`.
 - If you hit a new pitfall, add it to PITFALLS.md (symptom, cause, fix) so the next
   agent doesn't repeat it.
 - Changing `DPDK_VERSION` means updating `SHA256` in `tools/build-dpdk-from-source.sh`.

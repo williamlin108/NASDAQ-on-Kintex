@@ -31,7 +31,7 @@ folder you opened.
 | Step | Details |
 |---|---|
 | Checks | Debian/Ubuntu only; refuses if NVIDIA's MLNX_OFED/DOCA is installed (not needed, and conflicts) |
-| Packages | rdma-core, meson/ninja, gdb, clangd, build tools, mstflint |
+| Packages | rdma-core, meson/ninja, gdb, clangd, build tools, mstflint, shellcheck, python3-markdown |
 | DPDK 25.11 | From the distro if it ships 25.11 (Ubuntu 26.04 does), otherwise built from source (about 1 minute on 20 cores, longer on smaller machines) |
 | Drivers | Makes sure the inbox mlx5 kernel drivers are loaded and the cards **not** bound to vfio |
 | Hugepages | Reserves 4 GB permanently (`--hugepages-mb 1024` for 1 GB) |
@@ -48,6 +48,12 @@ It's safe to run again at any time. It only changes what's missing.
 ./install.sh --no-vscode         # skip VS Code setup
 ./verify.sh                      # quick check (no project build)
 ```
+
+## Using it day to day
+
+See the user guide: `../docs/user-guide.html` (open in a browser) or
+[../docs/user-guide.md](../docs/user-guide.md). How the pieces work:
+[../docs/how-it-works.md](../docs/how-it-works.md).
 
 ## Something broke?
 
