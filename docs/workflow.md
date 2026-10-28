@@ -33,8 +33,10 @@ build dir stores absolute paths.
 ## Run: `./run` and `eal.conf`
 
 `./run` builds, then runs `dpdk-run ./build/itch-replay <args from eal.conf>`.
-App args: put them at the bottom of `eal.conf` after a `--` line (shared with F5),
-or one-off on the command line: `./run -- --file itch.bin`. Don't use both at once.
+App args: put them at the bottom of `eal.conf` after a `--` line (shared with F5).
+`./run` appends its own arguments after the eal.conf ones, so for one-off extras use
+`./run --verbose` when eal.conf already ends with a `--` section, or
+`./run -- --verbose` when it doesn't. F5 only uses eal.conf.
 
 `eal.conf` holds the EAL args, one or more per line, with `#` comments. Memory:
 `--socket-mem=256` (MB preallocated) and `--socket-limit=1024` (MB cap; grows on
@@ -83,7 +85,11 @@ Fallback (always works): `sudo ./build/itch-replay -l 0-1 -a 85:00.0 -a 85:00.1`
   ptrace only ignores *file* caps. No `"args"` key in launch.json, so MIEngine doesn't
   override the gdb `set args`.
 - Verified 2026-10-27 from the CLI: `dpdk-gdb -batch -x build-debug/args.gdb -ex 'break main' -ex run`
-  hits the breakpoint with argc=10 and probes both mlx5 ports. Not yet verified by
-  pressing F5 in the VS Code UI.
+  hits the breakpoint with argc=10 and probes both mlx5 ports.
+- Verified 2026-10-27 through cpptools' own debug adapter (OpenDebugAD7, driven over
+  DAP with the exact launch.json config) on a throwaway project made by following
+  user-guide.md: breakpoint hit in 0.8 s, variables/watch/step/continue work, app args
+  from eal.conf arrive (MIEngine does not override `set args` when launch.json has no
+  `"args"`), clean exit, no leaked hugepages or processes.
 
 User settings: `~/.config/Code/User/settings.json`.

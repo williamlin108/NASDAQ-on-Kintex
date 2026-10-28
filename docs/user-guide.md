@@ -12,7 +12,7 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 | Open the project | `code ~/dpdk-projects/itch-replay` |
 | Build **and** run | **Ctrl+Shift+B** in VS Code, or `./run` in a terminal |
 | Only build | `ninja -C build` (optimized) / `ninja -C build-debug` (for debugging) |
-| Run with arguments for my program | Put them in `eal.conf` after a `--` line (used by ./run **and** F5), or one-off: `./run -- --file itch.bin` |
+| Run with arguments for my program | Put them in `eal.conf` after a `--` line (used by ./run **and** F5). One-off extras: `./run --verbose` if `eal.conf` already has a `--` line, otherwise `./run -- --verbose` |
 | Debug | **F5** (set breakpoints first by clicking left of a line number) |
 | Change cores / memory / ports | Edit `eal.conf`, then run again (no rebuild needed) |
 | Rebuild from scratch | `rm -rf build && meson setup build && ninja -C build` |

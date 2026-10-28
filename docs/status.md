@@ -28,7 +28,8 @@
 
 ## Known gaps / notes
 
-- F5 debugging: launch.json + dpdk-gdb set up; verified via gdb CLI, not yet by pressing F5 in the UI.
+- F5 debugging: verified through VS Code's C++ debug adapter (breakpoints, variables, watch, step, app args).
+- user-guide.md "Making a new project" walkthrough tested end to end on 2026-10-27 (build, run, Ctrl+Shift+B command, F5, adding a source file, rebuild, clangd, testpmd commands, git).
 - Git: `main` tracks `origin` = git@github.com:williamlin108/NASDAQ-on-Kintex.git (SSH). Ignored: `build/`, `build-debug/`, `.cache/`, `.vscode/settings.json` (Meson-extension-generated, machine-specific).
 - NIC firmware is Dell-branded 14.32.2004; no update attempted.
 
