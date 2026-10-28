@@ -2,3 +2,4 @@ build/
 .cache/
 # Written by the Meson VS Code extension; machine-specific absolute paths
 .vscode/settings.json
+build-debug/

@@ -11,8 +11,9 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 |---|---|
 | Open the project | `code ~/dpdk-projects/itch-replay` |
 | Build **and** run | **Ctrl+Shift+B** in VS Code, or `./run` in a terminal |
-| Only build | `ninja -C build` |
-| Run with arguments for my program | `./run -- --file itch.bin` (everything after `--` goes to your program) |
+| Only build | `ninja -C build` (optimized) / `ninja -C build-debug` (for debugging) |
+| Run with arguments for my program | Put them in `eal.conf` after a `--` line (used by ./run **and** F5), or one-off: `./run -- --file itch.bin` |
+| Debug | **F5** (set breakpoints first by clicking left of a line number) |
 | Change cores / memory / ports | Edit `eal.conf`, then run again (no rebuild needed) |
 | Rebuild from scratch | `rm -rf build && meson setup build && ninja -C build` |
 | After editing `meson.build` | `meson setup --reconfigure build` |
@@ -31,6 +32,7 @@ detailed "why" behind the setup, see [setup.md](setup.md) and [workflow.md](work
 | Shortcut | What it does |
 |---|---|
 | **Ctrl+Shift+B** | **Set up for this project:** builds with ninja, then runs the program via `./run` |
+| **F5** | **Set up for this project:** builds the debug version and starts it in the debugger |
 | Ctrl+Shift+P | Command palette (search any command: "Meson: Build", "Reload Window", …) |
 | Ctrl+\` | Open/close the built-in terminal |
 | Ctrl+Space | Show autocomplete suggestions (clangd) |
@@ -54,9 +56,39 @@ Hovering over any `rte_*` function shows its documentation and signature.
 - **Meson extension** is set to use the `build/` folder (user setting
   `mesonbuild.buildFolder`). Don't be surprised if it creates
   `.vscode/settings.json`; that's expected and git-ignored.
-- **F5 (debugging) is not set up yet.** Debugging needs the same network
-  permissions as running; ask Claude to add a `launch.json` that runs gdb through
-  `dpdk-run`.
+
+### Debugging (F5)
+
+| Key | Action |
+|---|---|
+| Click left of a line number | Toggle a breakpoint (red dot) |
+| **F5** | Start debugging / continue to next breakpoint |
+| F10 | Step over (run the current line) |
+| F11 | Step into the function on this line |
+| Shift+F11 | Step out of the current function |
+| Shift+F5 | Stop debugging |
+| Ctrl+Shift+F5 | Restart |
+
+While paused: the left panel shows **Variables** (expand structs/pointers), **Watch**
+(type any expression, e.g. `mbuf->pkt_len`) and **Call Stack**. In the Debug Console
+you can type expressions, or gdb commands prefixed with `-exec`, e.g.
+`-exec x/64xb rte_pktmbuf_mtod(m, char *)` to dump packet bytes.
+
+How it works:
+- F5 first runs the task **"DPDK: build debug"**, which builds an **unoptimized** copy
+  in `build-debug/` (so variables aren't `<optimized out>` and stepping follows the
+  source) and turns `eal.conf` into `build-debug/args.gdb`.
+- gdb is started through **`~/.local/bin/dpdk-gdb`** (gdb wrapped in `dpdk-run`), so the
+  program gets the same network permissions as `./run`. No sudo.
+- Config lives in `.vscode/launch.json` and `.vscode/tasks.json`.
+
+Tips:
+- Breakpoints in the packet send/receive loop pause the whole program, so the card
+  stops sending. Fine for checking packet contents, useless for measuring speed.
+- If F5 says it can't find `build-debug/args.gdb` or the program, run the task by hand:
+  Ctrl+Shift+P → "Tasks: Run Task" → "DPDK: build debug", and read its error.
+- `build-debug/` is for debugging only. Measure performance with `./run` (optimized `build/`).
+- Command-line equivalent: `dpdk-gdb -x build-debug/args.gdb build-debug/itch-replay`.
 
 ---
 
@@ -73,6 +105,8 @@ dpdk-run ./build/itch-replay <args from eal.conf> <your args>
   - `--socket-limit=1024`: max MB it may grow to
   - `--in-memory`: **keep this.** It's what lets it run without sudo and leave no files behind.
   - `-a 85:00.0` / `-a 85:00.1`: the two ConnectX ports. Remove a line to use only one.
+  - Optional, at the bottom: a `--` line followed by **your program's own arguments**.
+    Both `./run` and F5 use them.
 - **`dpdk-run`** (in `~/.local/bin`) starts a program with just enough network
   permissions for DPDK, so **you never need `sudo` to run your programs.** It works for any
   DPDK program, e.g. `dpdk-run dpdk-testpmd -l 0-1 --in-memory -a 85:00.0 -- -i`.
@@ -90,17 +124,20 @@ dpdk-run ./build/itch-replay <args from eal.conf> <your args>
 
 ```
 cd ~/dpdk-projects
-mkdir my-project && cd my-project
-mkdir src
+mkdir -p my-project/src my-project/.vscode && cd my-project
 cp ../itch-replay/{meson.build,eal.conf,run,.gitignore} .
-cp -r ../itch-replay/.vscode .
-rm -f .vscode/settings.json
+cp ../itch-replay/.vscode/{tasks.json,launch.json} .vscode/
+sed -i 's/itch-replay/my-project/g' meson.build run .vscode/launch.json
 ```
 
 Then:
 
-1. In `meson.build`, change `itch-replay` (project name and executable name) to `my-project`.
-2. In `run`, change `./build/itch-replay` to `./build/my-project`.
+1. The `sed` line renames the program in the three files that contain its name:
+   `meson.build` (project + executable), `run` (`./build/...`) and
+   `.vscode/launch.json` (`build-debug/...`). Check with `grep -rn itch-replay . .vscode`
+   (should print nothing).
+2. In `eal.conf`, adjust cores/memory/ports, and remove any program arguments after
+   a `--` line that don't apply to the new program.
 3. Write `src/main.c` (copy `../itch-replay/src/main.c` as a starting point).
 4. Set up the build and the clangd link:
    ```
@@ -108,7 +145,8 @@ Then:
    ln -s build/compile_commands.json .
    ninja -C build
    ```
-5. `code .` to open it, and Ctrl+Shift+B to build and run.
+5. `code .` to open it. Ctrl+Shift+B builds and runs; F5 debugs (it creates
+   `build-debug/` the first time by itself).
 6. Git (optional): `git init && git add -A && git commit -m "Initial commit"`. To put
    it on GitHub: create an **empty** repo on github.com, then
    `git remote add origin git@github.com:williamlin108/<repo>.git && git push -u origin main`.
@@ -143,7 +181,8 @@ These were changed during setup. If something odd happens, check here first.
   sudo install -m 0750 -o wl -g wl /usr/sbin/capsh ~/.local/bin/dpdk-caps
   sudo setcap cap_net_raw,cap_net_admin,cap_ipc_lock+p ~/.local/bin/dpdk-caps
   ```
-- **Undo:** `rm ~/.local/bin/dpdk-caps ~/.local/bin/dpdk-run`.
+- **`dpdk-gdb`** (also in `~/.local/bin`) is gdb started through `dpdk-run`; F5 uses it.
+- **Undo:** `rm ~/.local/bin/dpdk-caps ~/.local/bin/dpdk-run ~/.local/bin/dpdk-gdb`.
 
 ### Running with `sudo` instead leaves files behind
 - `sudo ./build/itch-replay ...` **without** `--in-memory` creates root-owned files in
@@ -187,4 +226,7 @@ These were changed during setup. If something odd happens, check here first.
 | `Requested device 0000:85:00.x cannot be used` | Same as above, or the card is in use by another DPDK program. |
 | `Dependency "libdpdk" not found` | `sudo apt-get install libdpdk-dev` |
 | Autocomplete/red squiggles wrong in VS Code | `ninja -C build`, then Ctrl+Shift+P → "clangd: Restart language server". |
-| Build errors after moving the project folder | `rm -rf build && meson setup build` |
+| Build errors after moving the project folder | `rm -rf build build-debug && meson setup build` (F5 recreates build-debug) |
+| F5: `DevX create TIS failed` / ports can't be used | launch.json isn't using `dpdk-gdb` (check `miDebuggerPath`), or dpdk-caps lost its caps. |
+| F5 starts but my program gets no arguments | Check `build-debug/args.gdb` exists and has `set args ...`; rerun task "DPDK: build debug". Don't put `"args"` in launch.json, because it overrides args.gdb. |
+| F5: `<optimized out>` variables | You're debugging the `build/` binary. launch.json `program` should point at `build-debug/`. |

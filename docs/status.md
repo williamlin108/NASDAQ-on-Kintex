@@ -28,10 +28,8 @@
 
 ## Known gaps / notes
 
-- Debugging: VS Code/gdb launches won't have the caps. Either run gdb under
-  `dpdk-run` (e.g. a `miDebuggerPath` wrapper `dpdk-run gdb "$@"`) or debug with sudo.
-  No `launch.json` yet.
-- Git: `main` tracks `origin` = git@github.com:williamlin108/NASDAQ-on-Kintex.git (SSH). Ignored: `build/`, `.cache/`, `.vscode/settings.json` (Meson-extension-generated, machine-specific).
+- F5 debugging: launch.json + dpdk-gdb set up; verified via gdb CLI, not yet by pressing F5 in the UI.
+- Git: `main` tracks `origin` = git@github.com:williamlin108/NASDAQ-on-Kintex.git (SSH). Ignored: `build/`, `build-debug/`, `.cache/`, `.vscode/settings.json` (Meson-extension-generated, machine-specific).
 - NIC firmware is Dell-branded 14.32.2004; no update attempted.
 
 ## Next development steps
