@@ -122,6 +122,10 @@ dpdk-run ./build/itch-replay <args from eal.conf> <your args>
 
 ## Making a new project
 
+**Easiest:** `~/dpdk-projects/Installation/new-project.sh my-project`. It does all the
+steps below, fills in this machine's card addresses, builds, and makes the first git
+commit. The manual steps are kept here for reference.
+
 ```
 cd ~/dpdk-projects
 mkdir -p my-project/src my-project/.vscode && cd my-project
@@ -217,6 +221,9 @@ These were changed during setup. If something odd happens, check here first.
 ---
 
 ## Troubleshooting
+
+First run `~/dpdk-projects/Installation/verify.sh`: it checks the whole setup and
+prints a `FAIL` line for anything wrong. `Installation/PITFALLS.md` explains each known problem.
 
 | Symptom | Fix |
 |---|---|
